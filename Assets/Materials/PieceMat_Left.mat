@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: PieceMat
+  m_Name: PieceMat_Left
   m_Shader: {fileID: -6465566751694194690, guid: 67b5ca502c9b1c645a9acaeba8fa7310, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords: []
@@ -68,7 +68,7 @@ Material:
     - _ZWrite: 1
     - _ZWriteControl: 0
     m_Colors:
-    - _BackFace: {r: 0.4811321, g: 0.4811321, b: 0.4811321, a: 1}
-    - _UVPosition: {r: 0.7, g: 0.8, b: 0, a: 0}
+    - _BackFace: {r: 0.48235294, g: 0.48235294, b: 0.48235294, a: 1}
+    - _UVPosition: {r: -0.1, g: 0, b: 0, a: 0}
     - _UVSize: {r: 0.2, g: 0.2, b: 0, a: 0}
   m_BuildTextureStacks: []
