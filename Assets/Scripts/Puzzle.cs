@@ -16,12 +16,16 @@ public class Puzzle : MonoBehaviour {
     [SerializeField] bool _keepRatio = true;
     [SerializeField] Vector2Int _puzzleSize = Vector2Int.one;
     [SerializeField] Vector2 _pieceSize = Vector2.one;
+    [Space]
+    [SerializeField] BetterEvent _onPieceAssemble = new BetterEvent();
 
     Dictionary<Vector2Int, Piece> _pieces = new Dictionary<Vector2Int, Piece>();
 
     public Vector2 PuzzleSize => _puzzleSize;
     public Vector2 PieceSize => _pieceSize;
     public DraggableParent AssembledParent => _assembledParent;
+
+    public event UnityAction OnPieceAssemble { add => _onPieceAssemble += value; remove => _onPieceAssemble -= value; }
     public event UnityAction OnFinish { add => _onFinish += value; remove => _onFinish -= value; }
 
     void Start() {
@@ -50,6 +54,7 @@ public class Puzzle : MonoBehaviour {
                 piece.Gates = gates;
                 piece.Texture = _texture;
                 piece.OnAssemble += Verify;
+                piece.OnAssemble += _InvokeOnPieceAssemble;
                 piece.gameObject.name = "Piece #" + x + ":" + y;
                 _pieces.Add(piecePosition, piece);
             }
@@ -85,8 +90,13 @@ public class Puzzle : MonoBehaviour {
         return gates;
     }
 
+    private void _InvokeOnPieceAssemble() {
+        _onPieceAssemble.Invoke();
+    }
+
     private void Verify() {
         if (CheckEnd()) {
+            Debug.Log("Fin");
             _onFinish.Invoke();
         }
     }

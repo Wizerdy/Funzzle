@@ -16,6 +16,8 @@ public class Piece : MonoBehaviour, IDraggable {
     [Header("Parameters")]
     [SerializeField, Range(0f, 1f)] float _detectionDistance = 1f;
     [Space]
+    [SerializeField] BetterEvent _onTake = new BetterEvent();
+    [SerializeField] BetterEvent _onRelease = new BetterEvent();
     [SerializeField] BetterEvent _onAssemble = new BetterEvent();
 
     Rigidbody _rb;
@@ -36,6 +38,8 @@ public class Piece : MonoBehaviour, IDraggable {
     public DraggableParent DraggableParent { get => transform.parent.GetComponent<DraggableParent>(); set => transform.parent = value.transform; }
     public bool IsAssembled => transform.parent.GetComponent<IDraggable>() != null;
 
+    public event UnityAction OnTake { add => _onTake += value; remove => _onTake += value; }
+    public event UnityAction OnRelease { add => _onRelease += value; remove => _onRelease += value; }
     public event UnityAction OnAssemble { add => _onAssemble += value; remove => _onAssemble += value; }
 
     private void Start() {
@@ -73,6 +77,7 @@ public class Piece : MonoBehaviour, IDraggable {
         if (IsAssembled) {
             DragManager.Pickup(transform.parent.gameObject.GetComponentInRoot<IDraggable>());
         }
+        _onTake.Invoke();
     }
 
     public void OnDrop() {
@@ -95,7 +100,6 @@ public class Piece : MonoBehaviour, IDraggable {
             }
 
             if (!hit.HasValue) { continue; }
-            Debug.Log(name + ": Hit! " + direction + ":" + hit.Value.collider.gameObject.GetRoot().name);
 
             if (hit.Value.collider.gameObject.TryGetRootComponent(out Piece piece)) {
                 if (!IsNextTo(piece, direction)) { continue; }
@@ -108,13 +112,14 @@ public class Piece : MonoBehaviour, IDraggable {
                 TeleportNextTo(piece, direction);
                 Assemble(piece);
 
-                _onAssemble.Invoke();
-                piece._onAssemble.Invoke();
-
                 AddNeighbours(direction, piece);
                 piece.AddNeighbours(direction.Inverse(), this);
+
+                _onAssemble.Invoke();
+                piece._onAssemble.Invoke();
             }
         }
+        _onRelease.Invoke();
     }
 
     private void TeleportNextTo(Piece piece, Direction direction) {
