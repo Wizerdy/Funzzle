@@ -1,14 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using ToolsBoxEngine.BetterEvents;
 using UnityEngine.Events;
+using ToolsBoxEngine;
+using UnityEditor.SceneManagement;
 
+[SelectionBase]
 public class Piece : MonoBehaviour, IDraggable {
+    [Header("System")]
     [SerializeField] CornerPieceUVs _cornerInPrefab;
     [SerializeField] CornerPieceUVs _cornerStraightPrefab;
     [SerializeField] CornerPieceUVs _cornerOutPrefab;
-    [SerializeField] UnityEvent _onAssemble = new UnityEvent();
+    [SerializeField] LayerMask _pieceDetectionLayer;
+    [Header("Parameters")]
+    [SerializeField, Range(0f, 1f)] float _detectionDistance = 1f;
+    [Space]
+    [SerializeField] BetterEvent _onAssemble = new BetterEvent();
 
+    Rigidbody _rb;
     Puzzle _puzzle;
     Vector2Int _puzzlePosition;
     Texture _texture;
@@ -18,6 +28,7 @@ public class Piece : MonoBehaviour, IDraggable {
 
     Color[] _debugColors = { Color.blue, Color.red, Color.yellow, Color.green };
 
+    public GameObject GameObject => gameObject;
     public Puzzle Puzzle { get => _puzzle; set => _puzzle = value; }
     public Vector2Int PuzzlePosition { get => _puzzlePosition; set => _puzzlePosition = value; }
     public Texture Texture { get => _texture; set => _texture = value; }
@@ -25,9 +36,11 @@ public class Piece : MonoBehaviour, IDraggable {
     public DraggableParent DraggableParent { get => transform.parent.GetComponent<DraggableParent>(); set => transform.parent = value.transform; }
     public bool IsAssembled => transform.parent.GetComponent<IDraggable>() != null;
 
-    public event UnityAction OnAssemble { add => _onAssemble.AddListener(value); remove => _onAssemble.RemoveListener(value); }
+    public event UnityAction OnAssemble { add => _onAssemble += value; remove => _onAssemble += value; }
 
     private void Start() {
+        _rb = GetComponent<Rigidbody>();
+        OnAssemble += RemoveRigidbody;
         InstantiateCorners();
     }
 
@@ -56,8 +69,9 @@ public class Piece : MonoBehaviour, IDraggable {
     }
 
     public void OnPickup() {
+        transform.rotation = Quaternion.LookRotation(-Vector3.forward, -Vector3.up);
         if (IsAssembled) {
-            DragManager.Pickup(transform.parent.gameObject);
+            DragManager.Pickup(transform.parent.gameObject.GetComponentInRoot<IDraggable>());
         }
     }
 
@@ -67,21 +81,38 @@ public class Piece : MonoBehaviour, IDraggable {
             Vector2 directionV2 = Tools.DirToV2(direction);
             if (_neighbours.ContainsKey(direction)) { continue; }
 
-            float rayDistance = i % 2 == 0 ? _puzzle.PieceSize.y : _puzzle.PieceSize.x;
+            float rayDistance = (i % 2 == 0 ? _puzzle.PieceSize.y : _puzzle.PieceSize.x) * _detectionDistance;
 
             Vector3 rayDirection = Quaternion.Inverse(transform.rotation) * -directionV2;
 
-            Debug.DrawRay(transform.position, rayDirection * rayDistance, _debugColors[i], 5f);
-            if (Physics.Raycast(transform.position, rayDirection, out RaycastHit hit, rayDistance)) {
-                if (hit.collider.gameObject.TryGetComponent(out Piece piece)) {
-                    if (!IsNextTo(piece, direction)) { continue; }
-                    TeleportNextTo(piece, direction);
-                    Assemble(piece);
-                    _onAssemble?.Invoke();
+            Debug.DrawRay(transform.position.Override(0f, Axis.Z), rayDirection * rayDistance, _debugColors[i], 5f);
 
-                    AddNeighbours(direction, piece);
-                    piece.AddNeighbours(direction.Inverse(), this);
+            RaycastHit? hit = null;
+            RaycastHit[] hits = Physics.RaycastAll(transform.position.Override(0f, Axis.Z), rayDirection, rayDistance, _pieceDetectionLayer, QueryTriggerInteraction.Collide);
+            for (int j = 0; j < hits.Length; j++) {
+                if (hits[j].collider.gameObject.GetRoot() == gameObject) { continue; }
+                hit = hits[j];
+            }
+
+            if (!hit.HasValue) { continue; }
+            Debug.Log(name + ": Hit! " + direction + ":" + hit.Value.collider.gameObject.GetRoot().name);
+
+            if (hit.Value.collider.gameObject.TryGetRootComponent(out Piece piece)) {
+                if (!IsNextTo(piece, direction)) { continue; }
+
+                if (hit.Value.collider.transform.rotation != transform.rotation) {
+                    Debug.Log("Not Same Rotation");
+                    continue;
                 }
+
+                TeleportNextTo(piece, direction);
+                Assemble(piece);
+
+                _onAssemble.Invoke();
+                piece._onAssemble.Invoke();
+
+                AddNeighbours(direction, piece);
+                piece.AddNeighbours(direction.Inverse(), this);
             }
         }
     }
@@ -97,6 +128,9 @@ public class Piece : MonoBehaviour, IDraggable {
 
     public void Assemble(Piece piece) {
         if (piece == null) { return; }
+        if (piece.IsAssembled && IsAssembled && piece.DraggableParent == DraggableParent) {
+                return;
+        }
 
         if (piece.IsAssembled) {
             if (IsAssembled) {
@@ -116,6 +150,10 @@ public class Piece : MonoBehaviour, IDraggable {
                 piece.DraggableParent = DraggableParent;
             }
         }
+    }
+
+    private void RemoveRigidbody() {
+        Destroy(_rb);
     }
 
     public bool IsNextTo(Piece piece, Direction direction) {

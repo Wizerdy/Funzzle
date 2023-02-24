@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using ToolsBoxEngine;
 
 [DisallowMultipleComponent]
 public class CornerPieceUVs : MonoBehaviour {
     [SerializeField] Texture d_texture;
     [SerializeField] Vector2 d_piecePosition = Vector2.zero;
-    [SerializeField] Vector2 d_puzzleSize = new Vector2(10f, 10f);
+    [SerializeField] Vector2Int d_puzzleSize = new Vector2Int(10, 10);
     [SerializeField] Direction d_direction;
     Vector2 _piecePosition = Vector2.one * -1f;
     Vector2 _puzzleSize = Vector2.one * -1f;
@@ -21,9 +22,11 @@ public class CornerPieceUVs : MonoBehaviour {
         _puzzleSize = puzzleSize;
         _direction = direction;
 
-        Material mat = GetComponent<Renderer>().material;
-        if (Application.isPlaying) {
+        Material mat;
+        if (!Application.isPlaying) {
             mat = GetComponent<Renderer>().sharedMaterial;
+        } else {
+            mat = GetComponent<Renderer>().material;
         }
 
         if (mat == null) { return; }
@@ -31,43 +34,42 @@ public class CornerPieceUVs : MonoBehaviour {
 
         Vector2 position = piecePosition;
         Vector2 uvSize = Vector2.one / puzzleSize;
+
+        if ((int)direction % 2 == 0) {
+            float temp = uvSize.x;
+            uvSize.x = uvSize.y;
+            uvSize.y = temp;
+        }
+
         float angle = Angle(direction);
 
         mat.SetTexture("_Texture", texture);
 
-        Vector2 correction = Tools.DirToV2(direction) * 0.5f * new Vector2(1f, -1f);
+        Vector2 correction = Tools.DirToV2(direction) * 0.5f * uvSize * new Vector2(1f, -1f);
+
+        if ((int)direction % 2 == 0) {
+            correction.y = (uvSize.y / -2f + uvSize.x / 2f) - Tools.DirToV2(direction).y * (uvSize.x / 2f);
+            correction.x = ((uvSize.y < uvSize.x ? -uvSize.y : uvSize.x) / 2f) * (Mathf.Max(puzzleSize.x, puzzleSize.y) / Mathf.Min(puzzleSize.x, puzzleSize.y) - 1f);
+        }
+
         //Debug.Log(name + " : " + correction);
 
-        Matrix4x4 matrix = Matrix4x4.TRS(puzzleSize / 2f, Quaternion.AngleAxis(-angle, Vector3.forward), Vector2.one);
-        position = matrix.MultiplyVector((position + correction).ToV3() - matrix.GetPosition());
-        position += new Vector2(matrix.GetPosition().x, matrix.GetPosition().y);
+        //Matrix4x4 matrix = Matrix4x4.TRS(puzzleSize / 2f, Quaternion.AngleAxis(-angle, Vector3.forward), Vector2.one);
+        //position = matrix.MultiplyVector((position + correction).ToV3() - matrix.GetPosition());
+        //position += new Vector2(matrix.GetPosition().x, matrix.GetPosition().y);
 
-        mat.SetVector("_UVPosition", (position - WeirdDirections(direction)) / puzzleSize);
+        //mat.SetVector("_UVPosition", (position - WeirdDirections(direction)) / puzzleSize);
+        mat.SetVector("_UVPosition", position / puzzleSize + correction);
 
         //uvSize = matrix.MultiplyVector(uvSize);
         mat.SetVector("_UVSize", uvSize);
 
         mat.SetFloat("_UVRotation", angle);
 
-        Debug.Log(name + " : Pos:" + position + "; MPos:" + matrix.GetPosition() + "; UV:" + uvSize);
+        //Debug.Log(name + " : Pos:" + position + "; MPos:" + matrix.GetPosition() + "; UV:" + uvSize);
     }
 
     float Angle(Direction direction) {
         return (((int)direction * 90f) + 90f) % 360f;
-    }
-
-    Vector2 WeirdDirections(Direction direction) {
-        switch (direction) {
-            case Direction.UP:
-                return new Vector2(0f, 1f);
-            case Direction.RIGHT:
-                return new Vector2(1f, 1f);
-            case Direction.DOWN:
-                return new Vector2(1f, 0f);
-            case Direction.LEFT:
-                return new Vector2(0f, 0f);
-            default:
-                return Vector2.zero;
-        }
     }
 }

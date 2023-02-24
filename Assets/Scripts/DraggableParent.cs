@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class DraggableParent : MonoBehaviour, IDraggable {
+    public GameObject GameObject => gameObject;
+
     public void Merge(DraggableParent other) {
         if (other == this) { throw new System.AccessViolationException("Same object " + name); }
 

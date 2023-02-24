@@ -1,30 +1,34 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using ToolsBoxEngine.BetterEvents;
 using UnityEngine.Events;
+using ToolsBoxEngine;
 
 public class Puzzle : MonoBehaviour {
     [Header("System")]
     [SerializeField] Piece _piece;
     [SerializeField] DraggableParent _assembledParent;
-    [SerializeField] UnityEvent _onFinish;
+    [SerializeField] BetterEvent _onFinish = new BetterEvent();
 
     [Header("Puzzle")]
     [SerializeField] Texture _texture;
+    [SerializeField] bool _keepRatio = true;
     [SerializeField] Vector2Int _puzzleSize = Vector2Int.one;
-    [SerializeField] Vector2 _puzzleScale = Vector2.one;
+    [SerializeField] Vector2 _pieceSize = Vector2.one;
 
     Dictionary<Vector2Int, Piece> _pieces = new Dictionary<Vector2Int, Piece>();
-    Vector2 _pieceSize = Vector2.zero;
 
     public Vector2 PuzzleSize => _puzzleSize;
     public Vector2 PieceSize => _pieceSize;
     public DraggableParent AssembledParent => _assembledParent;
-    public event UnityAction OnFinish { add => _onFinish.AddListener(value); remove => _onFinish.RemoveListener(value); }
+    public event UnityAction OnFinish { add => _onFinish += value; remove => _onFinish -= value; }
 
     void Start() {
-        _pieceSize = _puzzleScale / _puzzleSize;
-
+        if (_keepRatio) {
+            float ratio = (float)_texture.height / (float)_texture.width;
+            _puzzleSize.y = Mathf.RoundToInt(ratio * _puzzleSize.x);
+        }
         GeneratePuzzle(transform.position);
     }
 
@@ -57,7 +61,7 @@ public class Puzzle : MonoBehaviour {
 
         for (int i = 0; i < 4; i++) {
             Direction direction = (Direction)i;
-            Vector2Int neighbour = position + Tools.DirToV2I(direction.UpIsDown());
+            Vector2Int neighbour = position + Tools.DirToV2I(direction).UpIsDown();
             if (_pieces.ContainsKey(neighbour)) {
                 gates[i] = _pieces[neighbour].Gates[(int)direction.Inverse()] * -1;
             } else {
@@ -83,7 +87,7 @@ public class Puzzle : MonoBehaviour {
 
     private void Verify() {
         if (CheckEnd()) {
-            _onFinish?.Invoke();
+            _onFinish.Invoke();
         }
     }
 

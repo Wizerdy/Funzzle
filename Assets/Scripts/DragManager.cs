@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using ToolsBoxEngine;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class DragManager : MonoBehaviour {
@@ -9,6 +11,7 @@ public class DragManager : MonoBehaviour {
 
     [SerializeField] Camera _camera;
     [SerializeField] float _z_offset = 1f;
+    [SerializeField] LayerMask _raycastMask;
 
     Vector3 _offset;
     Vector2? _selectionStart;
@@ -36,34 +39,54 @@ public class DragManager : MonoBehaviour {
             if (_dragging == null) {
                 Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
 
-                if (Physics.Raycast(ray, out RaycastHit hit)) {
-                    Pickup(hit.collider.gameObject);
+                Debug.DrawRay(ray.origin, ray.direction * 50f, Color.black, 5f);
+                if (Physics.Raycast(ray, out RaycastHit hit, 50f, _raycastMask)) {
+                    Pickup(hit.collider.gameObject.GetComponentInRoot<IDraggable>());
                 }
             } else {
-                _dragging.transform.position = new Vector3(_dragging.transform.position.x, _dragging.transform.position.y, _z_offset);
+                //_dragging.transform.position = new Vector3(_dragging.transform.position.x, _dragging.transform.position.y, _z_offset);
                 Drop();
             }
         }
 
         if (_dragging != null) {
-            Vector3 position = _camera.ScreenToWorldPoint(Input.mousePosition) + _offset;
-            position.z = _z_offset;
+            //Vector3 position = _camera.ScreenToWorldPoint(Input.mousePosition) + _offset;
+            Vector3 position = MouseToWorldPosition(_camera, _offset.z) + _offset.Override(0f, Axis.Z);
+            //position.z = _z_offset;
             _dragging.transform.position = position;
         }
     }
 
-    public static void Pickup(GameObject obj) {
-        _dragging = obj;
-        _instance._offset = obj.transform.position - _instance._camera.ScreenToWorldPoint(Input.mousePosition);
-        _instance._offset.z = obj.transform.position.z - _instance._z_offset;
-        if (obj.TryGetComponent(out IDraggable drag)) {
-            drag.OnPickup();
+    private static Vector3 MouseToWorldPosition(Camera camera, float z) {
+        Ray ray = camera.ScreenPointToRay(Input.mousePosition);
+        Plane plane = new Plane(Vector3.forward, new Vector3(0, 0, z));
+        plane.Raycast(ray, out float distance);
+        return ray.GetPoint(distance);
+    }
+
+    public static void Pickup(IDraggable obj) {
+        if (obj == null) { return; }
+
+        _dragging = obj.GameObject;
+        _instance._offset = obj.GameObject.transform.position - MouseToWorldPosition(_instance._camera, _dragging.transform.position.z + _instance._z_offset);
+        _instance._offset.z = _dragging.transform.position.z + _instance._z_offset;
+
+        if (_dragging.TryGetRootComponent(out Rigidbody rb)) {
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
         }
+
+        obj.OnPickup();
     }
 
     public static void Drop() {
-        _dragging.transform.position = new Vector3(_dragging.transform.position.x, _dragging.transform.position.y, _instance._z_offset - _instance._offset.z);
-        if (_dragging.TryGetComponent(out IDraggable drag)) {
+        if (_dragging.TryGetRootComponent(out Rigidbody rb)) {
+            rb.velocity = Vector3.zero;
+            rb.isKinematic = false;
+        }
+
+        if (_dragging.TryGetRootComponent(out IDraggable drag)) {
             drag.OnDrop();
         }
         _dragging = null;
