@@ -33,7 +33,6 @@ public class ClientCore : MonoBehaviour {
         if (!ENet.Library.Initialize())
             throw new Exception("Failed to initialize ENet");
 
-        Debug.Log(m_enetHost.NativeData);
         m_enetHost.Create(1, 0);
     }
 

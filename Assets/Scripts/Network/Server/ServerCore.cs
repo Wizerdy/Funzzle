@@ -62,27 +62,27 @@ public class ServerCore : MonoBehaviour {
 
                     case ENet.EventType.Connect:
                         _peers.Add(peer);
-                        Console.WriteLine("Client connected - ID: " + peer.ID + ", IP: " + peer.IP);
+                        Debug.Log("Client connected - ID: " + peer.ID + ", IP: " + peer.IP);
 
                         _onConnect.Invoke(peer);
                         break;
 
                     case ENet.EventType.Disconnect:
                         _peers.Remove(peer);
-                        Console.WriteLine("Client disconnected - ID: " + peer.ID + ", IP: " + peer.IP);
+                        Debug.Log("Client disconnected - ID: " + peer.ID + ", IP: " + peer.IP);
 
                         _onDisconnect.Invoke(peer);
                         break;
 
                     case ENet.EventType.Timeout:
                         _peers.Remove(peer);
-                        Console.WriteLine("Client timeout - ID: " + peer.ID + ", IP: " + peer.IP);
+                        Debug.Log("Client timeout - ID: " + peer.ID + ", IP: " + peer.IP);
 
                         _onDisconnect.Invoke(peer);
                         break;
 
                     case ENet.EventType.Receive:
-                        Console.WriteLine("Packet received from - ID: " + peer.ID + ", IP: " + peer.IP + ", Channel ID: " + evt.ChannelID + ", Data length: " + evt.Packet.Length);
+                        Debug.Log("Packet received from - ID: " + peer.ID + ", IP: " + peer.IP + ", Channel ID: " + evt.ChannelID + ", Data length: " + evt.Packet.Length);
 
                         byte[] array = new byte[1024];
                         evt.Packet.CopyTo(array);
