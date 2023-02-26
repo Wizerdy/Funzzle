@@ -15,11 +15,11 @@ public class ServerMenu : MonoBehaviour {
     private void Start() {
         try {
             if (portInputField != null) {
-                portInputField.transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = _port.ToString();
+                portInputField.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = _port.ToString();
                 portInputField.onValueChanged.AddListener(EnterPort);
             }
             if (nameInputField != null) {
-                nameInputField.transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = _name;
+                nameInputField.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = _name;
                 nameInputField.onValueChanged.AddListener(EnterName);
             }
         } catch (System.Exception e) {

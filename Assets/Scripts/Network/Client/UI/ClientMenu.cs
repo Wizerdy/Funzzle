@@ -21,15 +21,15 @@ public class ClientMenu : MonoBehaviour {
 
         try {
             if (ipInputField != null) {
-                ipInputField.transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = _ip;
+                ipInputField.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = _ip;
                 ipInputField.onValueChanged.AddListener(EnterIp);
             }
             if (portInputField != null) {
-                portInputField.transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = _port.ToString();
+                portInputField.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = _port.ToString();
                 portInputField.onValueChanged.AddListener(EnterPort);
             }
             if (nameInputField != null) {
-                nameInputField.transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = _name;
+                nameInputField.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = _name;
                 nameInputField.onValueChanged.AddListener(EnterName);
             }
         } catch (System.Exception e) {

@@ -28,7 +28,7 @@ public class ServerCore : MonoBehaviour {
     #region Unity Callbacks
 
     private void Awake() {
-        if (_instance != null) {
+        if (_instance == null) {
             _instance = this;
             DontDestroyOnLoad(gameObject);
         } else {
@@ -43,6 +43,8 @@ public class ServerCore : MonoBehaviour {
     }
 
     void FixedUpdate() {
+        if (!_server.IsSet) { return; }
+
         ENet.Event evt;
 
         if (_server.Service(0, out evt) > 0) {
@@ -99,6 +101,7 @@ public class ServerCore : MonoBehaviour {
 
         address.Port = port;
         _server.Create(address, _instance._maxPlayers);
+        Debug.Log("Server created at port : " + address.Port);
         _onCreate.Invoke();
         return true;
     }

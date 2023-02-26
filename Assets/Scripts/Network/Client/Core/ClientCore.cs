@@ -20,7 +20,7 @@ public class ClientCore : MonoBehaviour {
     #region Unity Callbacks
 
     private void Awake() {
-        if (_instance != null) {
+        if (_instance == null) {
             _instance = this;
             DontDestroyOnLoad(gameObject);
         } else {
