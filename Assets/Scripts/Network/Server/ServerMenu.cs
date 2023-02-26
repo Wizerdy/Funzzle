@@ -35,6 +35,7 @@ public class ServerMenu : MonoBehaviour {
     }
 
     public void EnterName(string text) {
+        _name = text;
         if (_name.Equals("")) {
             _name = "Billy";
         }

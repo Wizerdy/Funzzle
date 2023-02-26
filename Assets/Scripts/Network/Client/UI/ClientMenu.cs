@@ -43,6 +43,7 @@ public class ClientMenu : MonoBehaviour {
     }
 
     public void EnterIp(string text) {
+        _ip = text;
         if (_ip.Equals("")) {
             _ip = "localhost";
         }
@@ -56,6 +57,7 @@ public class ClientMenu : MonoBehaviour {
     }
 
     public void EnterName(string text) {
+        _name = text;
         if (_name.Equals("")) {
             _name = "Billy";
         }
