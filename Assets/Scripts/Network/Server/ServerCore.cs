@@ -42,6 +42,12 @@ public class ServerCore : MonoBehaviour {
             throw new Exception("Failed to initialize ENet");
     }
 
+    private void OnDestroy() {
+        if (!_server.IsSet) { return; }
+        _server.Flush();
+        _server.Dispose();
+    }
+
     void FixedUpdate() {
         if (!_server.IsSet) { return; }
 
