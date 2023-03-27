@@ -13,13 +13,16 @@ public static class Protocols {
     public enum Opcode {
         C_JOIN_GAME,            // [NAME:string]
         C_INPUTS,               // [INPUTS:input]
+        C_PUZZLE_IMAGE,         // [TEXTURE:texture]
+        C_PUZZLE,               // [SIZE:v2][SCALE:v2]
 
         S_ID,                   // [ID:u8]
         S_NEW_PLAYER,           // [ID:u8][NAME:string]
         S_PLAYER_LEFT,          // [ID:u8]
-        S_PLAYERS_LIST,         // {PLAYERS:[ID:u8]}
-        S_PUZZLE,               // [TEXTURE:texture][SIZE:v2][SCALE:v2]
-        S_PIECES                // {PIECES:[PIECE:pieceState]}
+        S_PLAYERS_LIST,         // [COUNT:u8]{PLAYERS:[ID:u8][NAME:string]}
+        S_PUZZLE_IMAGE,         // [TEXTURE:texture]
+        S_PUZZLE,               // [SIZE:v2][SCALE:v2]
+        S_PIECES                // [COUNT:u16]{PIECES:[PHYSIC:PhysicState]}
     }
 
     public interface IPacket {
@@ -131,10 +134,41 @@ public static class Protocols {
         packet.AddRange(bytes);
     }
 
+    public static void Serialize_v2(this List<byte> packet, Vector2 value) {
+        packet.Serialize_f32(value.x);
+        packet.Serialize_f32(value.y);
+    }
+
     public static void Serialize_v3(this List<byte> packet, Vector3 value) {
         packet.Serialize_f32(value.x);
         packet.Serialize_f32(value.y);
         packet.Serialize_f32(value.z);
+    }
+
+    public static void Serialize_v4(this List<byte> packet, Vector4 value) {
+        packet.Serialize_f32(value.x);
+        packet.Serialize_f32(value.y);
+        packet.Serialize_f32(value.z);
+        packet.Serialize_f32(value.w);
+    }
+
+    public static void Serialize_v2i(this List<byte> packet, Vector2Int value) {
+        packet.Serialize_i32(value.x);
+        packet.Serialize_i32(value.y);
+    }
+
+    public static void Serialize_v3i(this List<byte> packet, Vector3Int value) {
+        packet.Serialize_i32(value.x);
+        packet.Serialize_i32(value.y);
+        packet.Serialize_i32(value.z);
+    }
+
+    public static void Serialize_texture(this List<byte> packet, Texture2D value) {
+        byte[] bytes = value.GetRawTextureData();
+        packet.Serialize_u16((uint)value.width);
+        packet.Serialize_u16((uint)value.height);
+        packet.Serialize_u32((uint)bytes.Length);
+        packet.AddRange(bytes);
     }
 
     #endregion
@@ -206,12 +240,56 @@ public static class Protocols {
         return value;
     }
 
+    public static Vector2 Unserialize_v2(this List<byte> packet, ref int offset) {
+        Vector2 output;
+        output.x = packet.Unserialize_f32(ref offset);
+        output.y = packet.Unserialize_f32(ref offset);
+        return output;
+    }
+
     public static Vector3 Unserialize_v3(this List<byte> packet, ref int offset) {
         Vector3 output;
         output.x = packet.Unserialize_f32(ref offset);
         output.y = packet.Unserialize_f32(ref offset);
         output.z = packet.Unserialize_f32(ref offset);
         return output;
+    }
+
+    public static Vector4 Unserialize_v4(this List<byte> packet, ref int offset) {
+        Vector4 output;
+        output.x = packet.Unserialize_f32(ref offset);
+        output.y = packet.Unserialize_f32(ref offset);
+        output.z = packet.Unserialize_f32(ref offset);
+        output.w = packet.Unserialize_f32(ref offset);
+        return output;
+    }
+
+    public static Vector2Int Unserialize_v2i(this List<byte> packet, ref int offset) {
+        Vector2Int output = Vector2Int.zero;
+        output.x = packet.Unserialize_i32(ref offset);
+        output.y = packet.Unserialize_i32(ref offset);
+        return output;
+    }
+
+    public static Vector3Int Unserialize_v3i(this List<byte> packet, ref int offset) {
+        Vector3Int output = Vector3Int.zero;
+        output.x = packet.Unserialize_i32(ref offset);
+        output.y = packet.Unserialize_i32(ref offset);
+        output.z = packet.Unserialize_i32(ref offset);
+        return output;
+    }
+
+    public static Texture2D Unserialize_texture(this List<byte> packet, ref int offset) {
+        int width = (int)packet.Unserialize_u16(ref offset);
+        int height = (int)packet.Unserialize_u16(ref offset);
+        int length = (int)packet.Unserialize_u32(ref offset);
+        byte[] bytes = new byte[length];
+        packet.CopyTo(offset, bytes, 0, length);
+        offset += length;
+        Texture2D texture = new Texture2D(width, height);
+        texture.LoadRawTextureData(bytes);
+        texture.Apply();
+        return texture;
     }
 
     #endregion
@@ -232,3 +310,31 @@ public static class Protocols {
         return opcode != target;
     }
 }
+
+public struct PhysicState {
+    public uint id;
+    public Vector3 position;
+    public Quaternion rotation;
+    public Vector3 velocity;
+    public Vector3 angularVelocity;
+
+    public void Serialize(List<byte> array) {
+        array.Serialize_u16(id);
+        array.Serialize_v3(position);
+        array.Serialize_v4(new Vector4(rotation.x, rotation.y, rotation.z, rotation.w));
+        array.Serialize_v3(velocity);
+        array.Serialize_v3(angularVelocity);
+    }
+
+    public static PhysicState Unserialize(List<byte> array, ref int offset) {
+        PhysicState physicState = new PhysicState();
+
+        physicState.id = array.Unserialize_u16(ref offset);
+        physicState.position = array.Unserialize_v3(ref offset);
+        Vector4 rotation = array.Unserialize_v4(ref offset);
+        physicState.rotation = new Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
+        physicState.velocity = array.Unserialize_v3(ref offset);
+        physicState.angularVelocity = array.Unserialize_v3(ref offset);
+        return physicState;
+    }
+};

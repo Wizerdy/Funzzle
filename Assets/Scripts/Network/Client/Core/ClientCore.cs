@@ -4,6 +4,7 @@ using UnityEngine;
 using System;
 using ToolsBoxEngine.BetterEvents;
 using UnityEngine.Events;
+using UnityEditor;
 
 public class ClientCore : MonoBehaviour {
     static ClientCore _instance;
@@ -32,8 +33,6 @@ public class ClientCore : MonoBehaviour {
     private void Start() {
         if (!ENet.Library.Initialize())
             throw new Exception("Failed to initialize ENet");
-
-        m_enetHost.Create(1, 0);
     }
 
     private void OnDestroy() {
@@ -42,7 +41,19 @@ public class ClientCore : MonoBehaviour {
     }
 
     void FixedUpdate() {
+        // Sham Client
+        {
+            ENet.Packet packet;
+            while (ShamClientCore.CheckReceiveQueue(out packet) > 0) {
+                Receive(packet);
+            }
+        }
+
+        // Network Client
+        if (!m_enetHost.IsSet) { return; }
+
         ENet.Event evt;
+
         if (m_enetHost.Service(0, out evt) > 0) {
             do {
                 switch (evt.Type) {
@@ -61,14 +72,8 @@ public class ClientCore : MonoBehaviour {
                         break;
 
                     case ENet.EventType.Receive:
-                        byte[] array = new byte[1024];
-                        evt.Packet.CopyTo(array);
-                        List<byte> packet = new List<byte>();
-                        packet.AddRange(array);
-                        int offset = 0;
-                        Protocols.Opcode opcode = (Protocols.Opcode)packet.Unserialize_u8(ref offset);
+                        Receive(evt.Packet);
 
-                        _onReceive.Invoke(opcode, packet);
                         evt.Packet.Dispose();
                         break;
 
@@ -81,9 +86,22 @@ public class ClientCore : MonoBehaviour {
         }
     }
 
+    private void Receive(ENet.Packet epacket) {
+        byte[] array = new byte[epacket.Length];
+        epacket.CopyTo(array);
+        List<byte> packet = new List<byte>();
+        packet.AddRange(array);
+        int offset = 0;
+        Protocols.Opcode opcode = (Protocols.Opcode)packet.Unserialize_u8(ref offset);
+
+        _onReceive.Invoke(opcode, packet);
+    }
+
     #endregion
 
     public static bool Connect(string addressString, ushort port) {
+        m_enetHost.Create(1, 0);
+
         Debug.Log("Trying to connect to " + addressString + ":" + port);
         ENet.Address address = new ENet.Address();
         if (!address.SetHost(addressString)) {
@@ -98,6 +116,8 @@ public class ClientCore : MonoBehaviour {
     }
 
     public static void Send(Protocols.IPacket packet) {
+        if (PlayerInformation.IsServer) { ShamClientCore.Send(packet); return; }
+
         if (!peer.IsSet) { return; }
         ENet.Packet epacket = Protocols.BuildPacket(packet);
         peer.Send(0, ref epacket);

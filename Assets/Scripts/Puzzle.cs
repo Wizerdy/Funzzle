@@ -12,10 +12,11 @@ public class Puzzle : MonoBehaviour {
     [SerializeField] BetterEvent _onFinish = new BetterEvent();
 
     [Header("Puzzle")]
-    [SerializeField] Texture _texture;
+    [SerializeField] Texture2D _texture;
     [SerializeField] bool _keepRatio = true;
     [SerializeField] Vector2Int _puzzleSize = Vector2Int.one;
     [SerializeField] Vector2 _pieceSize = Vector2.one;
+    [SerializeField] Vector2 _spawnRect = Vector2.one;
     [Space]
     [SerializeField] BetterEvent _onPieceAssemble = new BetterEvent();
 
@@ -29,6 +30,8 @@ public class Puzzle : MonoBehaviour {
     public event UnityAction OnFinish { add => _onFinish += value; remove => _onFinish -= value; }
 
     void Start() {
+        Debug.Log(_texture.GetRawTextureData().Length + " .. " + _texture.width + " .. " + _texture.height);
+        Debug.Log(_texture.GetRawTextureData().Print());
         if (_keepRatio) {
             float ratio = (float)_texture.height / (float)_texture.width;
             _puzzleSize.y = Mathf.RoundToInt(ratio * _puzzleSize.x);
@@ -44,7 +47,8 @@ public class Puzzle : MonoBehaviour {
                 Vector2Int piecePosition = new Vector2Int(x, y);
                 gates = GeneratePiece(piecePosition);
 
-                Vector3 position = new Vector3(Random.Range(-_puzzleSize.x * _pieceSize.x / 2f, _puzzleSize.x * _pieceSize.x / 2f) + origin.x, Random.Range(-_puzzleSize.y * _pieceSize.y / 2f, _puzzleSize.y * _pieceSize.y / 2f) + origin.y, origin.z);
+                //Vector3 position = new Vector3(Random.Range(-_puzzleSize.x * _pieceSize.x / 2f, _puzzleSize.x * _pieceSize.x / 2f) + origin.x, Random.Range(-_puzzleSize.y * _pieceSize.y / 2f, _puzzleSize.y * _pieceSize.y / 2f) + origin.y, origin.z);
+                Vector3 position = new Vector3(Random.Range(-_spawnRect.x / 2f, _spawnRect.x / 2f) + origin.x, Random.Range(-_spawnRect.y / 2f, _spawnRect.y / 2f) + origin.y, origin.z);
                 Piece piece = Instantiate(_piece.gameObject, position, Quaternion.identity, transform)
                     .GetComponent<Piece>();
                 piece.transform.localScale = new Vector3(_pieceSize.x, _pieceSize.y, piece.transform.localScale.z);
@@ -108,5 +112,10 @@ public class Puzzle : MonoBehaviour {
             }
         }
         return true;
+    }
+
+    private void OnDrawGizmosSelected() {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(transform.position, _spawnRect);
     }
 }

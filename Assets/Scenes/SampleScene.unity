@@ -481,7 +481,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.4339623, g: 0.23949805, b: 0.23949805, a: 1}
+  m_BackGroundColor: {r: 0.6886792, g: 0.36707902, b: 0.36707902, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -522,7 +522,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_LocalRotation: {x: 0, y: -0.9961947, z: -0.08715578, w: 0}
-  m_LocalPosition: {x: 0, y: -4.07, z: 13.94}
+  m_LocalPosition: {x: 0, y: -4.07, z: 17.46}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -688,10 +688,11 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 1
           m_CallState: 2
-  _texture: {fileID: 2800000, guid: 51f1084ed810b94438cbe054f7ccd5dd, type: 3}
+  _texture: {fileID: 2800000, guid: e175c4793600f7c4e83832e71261bc5e, type: 3}
   _keepRatio: 1
-  _puzzleSize: {x: 5, y: 1}
+  _puzzleSize: {x: 10, y: 1}
   _pieceSize: {x: 2, y: 2}
+  _spawnRect: {x: 0, y: 0}
   _onPieceAssemble:
     _event:
       m_PersistentCalls:

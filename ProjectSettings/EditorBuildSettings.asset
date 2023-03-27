@@ -9,13 +9,13 @@ EditorBuildSettings:
     path: Assets/Scenes/Menu/NetMenu.unity
     guid: be397ea830b59c64884de5eb313f0902
   - enabled: 1
-    path: Assets/Scenes/Menu/ServerMenu.unity
+    path: Assets/Scenes/Menu/Menu_Server.unity
     guid: 366fc287a15e0cb45a81f92faedf4b31
   - enabled: 1
-    path: Assets/Scenes/Menu/ClientMenu.unity
+    path: Assets/Scenes/Menu/Menu_Client.unity
     guid: c1867f0af5a98fc48b1b8fdb7f986818
   - enabled: 1
-    path: Assets/Scenes/Menu/GameLobby.unity
+    path: Assets/Scenes/Menu/Lobby_Client.unity
     guid: 461263eed530b6a428feb05577d88e23
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity

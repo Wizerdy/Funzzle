@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using ENet;
+using ToolsBoxEngine;
 using ToolsBoxEngine.BetterEvents;
 using UnityEngine;
 using UnityEngine.Events;
@@ -34,7 +35,10 @@ public class ServerCore : MonoBehaviour {
         } else {
             gameObject.SetActive(false);
             Destroy(gameObject);
+            return;
         }
+
+        PlayerInformation.IsServer = true;
     }
 
     void Start() {
@@ -51,6 +55,15 @@ public class ServerCore : MonoBehaviour {
     void FixedUpdate() {
         if (!_server.IsSet) { return; }
 
+        // Sham Server
+        {
+            ENet.Packet packet;
+            while (ShamClientCore.CheckSendQueue(out packet) > 0) {
+                Receive(new Peer(), packet);
+            }
+        }
+
+        // Network Server
         ENet.Event evt;
 
         if (_server.Service(0, out evt) > 0) {
@@ -84,20 +97,24 @@ public class ServerCore : MonoBehaviour {
                     case ENet.EventType.Receive:
                         Debug.Log("Packet received from - ID: " + peer.ID + ", IP: " + peer.IP + ", Channel ID: " + evt.ChannelID + ", Data length: " + evt.Packet.Length);
 
-                        byte[] array = new byte[1024];
-                        evt.Packet.CopyTo(array);
-                        List<byte> packet = new List<byte>();
-                        packet.AddRange(array);
-                        int offset = 0;
-                        Protocols.Opcode opcode = (Protocols.Opcode)packet.Unserialize_u8(ref offset);
-
-                        _onReceive.Invoke(peer, opcode, packet);
+                        Receive(peer, evt.Packet);
 
                         evt.Packet.Dispose();
                         break;
                 }
             } while (_server.CheckEvents(out evt) > 0);
         }
+    }
+
+    private void Receive(ENet.Peer peer, ENet.Packet epacket) {
+        byte[] array = new byte[epacket.Length];
+        epacket.CopyTo(array);
+        List<byte> packet = new List<byte>();
+        packet.AddRange(array);
+        int offset = 0;
+        Protocols.Opcode opcode = (Protocols.Opcode)packet.Unserialize_u8(ref offset);
+
+        _onReceive.Invoke(peer, opcode, packet);
     }
 
     #endregion
@@ -107,22 +124,35 @@ public class ServerCore : MonoBehaviour {
 
         address.Port = port;
         _server.Create(address, _instance._maxPlayers);
-        Debug.Log("Server created at port : " + address.Port);
+        Debug.Log("Server created at " + address.GetHost() + " : " + address.Port);
         _onCreate.Invoke();
         return true;
     }
 
-    public static void Send(Peer peer, Protocols.IPacket packet) {
-        if (!peer.IsSet) { return; }
-        ENet.Packet epacket = Protocols.BuildPacket(packet);
-        peer.Send(0, ref epacket);
+    public static void Send(Peer peer, ENet.Packet packet) {
+        if (!peer.IsSet) { ShamClientCore.Receive(packet); return; }
+        peer.Send(0, ref packet);
     }
 
-    public static void Send(Protocols.IPacket packet) {
+    public static void Send(Peer peer, Protocols.IPacket packet) {
+        ENet.Packet epacket = Protocols.BuildPacket(packet);
+        Send(peer, epacket);
+    }
+
+    public static void SendAll(Protocols.IPacket packet, params Peer[] peerToIgnore) {
         ENet.Packet epacket = Protocols.BuildPacket(packet);
         for (int i = 0; i < _peers.Count; i++) {
-            if (!_peers[i].IsSet) { continue; }
-            _peers[i].Send(0, ref epacket);
+            if (peerToIgnore.Contains(_peers[i])) { continue; }
+            Send(_peers[i], epacket);
         }
+
+        // Sham Client
+        if (!peerToIgnore.Contains(new Peer())) {
+            Send(new Peer(), epacket);
+        }
+    }
+
+    public static void SendAll(Protocols.IPacket packet) {
+        SendAll(packet, new Peer[] {});
     }
 }
