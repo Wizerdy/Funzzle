@@ -95,7 +95,7 @@ public class ServerCore : MonoBehaviour {
                         break;
 
                     case ENet.EventType.Receive:
-                        Debug.Log("Packet received from - ID: " + peer.ID + ", IP: " + peer.IP + ", Channel ID: " + evt.ChannelID + ", Data length: " + evt.Packet.Length);
+                        //Debug.Log("Packet received from - ID: " + peer.ID + ", IP: " + peer.IP + ", Channel ID: " + evt.ChannelID + ", Data length: " + evt.Packet.Length);
 
                         Receive(peer, evt.Packet);
 
@@ -113,6 +113,8 @@ public class ServerCore : MonoBehaviour {
         packet.AddRange(array);
         int offset = 0;
         Protocols.Opcode opcode = (Protocols.Opcode)packet.Unserialize_u8(ref offset);
+
+        Debug.Log("(S) Packet Received : " + opcode.ToString() + " (" + packet.Count + ")");
 
         _onReceive.Invoke(peer, opcode, packet);
     }
@@ -136,7 +138,7 @@ public class ServerCore : MonoBehaviour {
 
     public static void Send(Peer peer, Protocols.IPacket packet) {
         ENet.Packet epacket = Protocols.BuildPacket(packet);
-        Debug.Log("Packet Send : " + packet.Opcode + " (" + epacket.Length + ")");
+        Debug.Log("(S) Packet Send : " + packet.Opcode + " (" + epacket.Length + ")");
         Send(peer, epacket);
     }
 

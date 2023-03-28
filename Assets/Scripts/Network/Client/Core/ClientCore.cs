@@ -62,7 +62,7 @@ public class ClientCore : MonoBehaviour {
                         break;
 
                     case ENet.EventType.Connect:
-                        Debug.Log("Connect");
+                        //Debug.Log("Connect");
 
                         _onConnect.Invoke(peer);
                         break;
@@ -94,7 +94,7 @@ public class ClientCore : MonoBehaviour {
         int offset = 0;
         Protocols.Opcode opcode = (Protocols.Opcode)packet.Unserialize_u8(ref offset);
 
-        Debug.Log("Packet Received : " + opcode.ToString() + " (" + packet.Count + ")");
+        Debug.Log("(C) Packet Received : " + opcode.ToString() + " (" + packet.Count + ")");
         _onReceive.Invoke(opcode, packet);
     }
 
@@ -117,6 +117,8 @@ public class ClientCore : MonoBehaviour {
     }
 
     public static void Send(Protocols.IPacket packet) {
+        Debug.Log("(C) Packet Send : " + packet.Opcode.ToString() + " (unknown)");
+
         if (PlayerInformation.IsServer) { ShamClientCore.Send(packet); return; }
 
         if (!peer.IsSet) { return; }
