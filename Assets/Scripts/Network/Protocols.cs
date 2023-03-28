@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
+using static UnityEngine.Rendering.DebugUI;
 
 public static class Protocols {
     public const uint SIZE_8 = 1;
@@ -165,6 +167,7 @@ public static class Protocols {
 
     public static void Serialize_texture(this List<byte> packet, Texture2D value) {
         byte[] bytes = value.GetRawTextureData();
+        packet.Serialize_u8((uint)value.format);
         packet.Serialize_u16((uint)value.width);
         packet.Serialize_u16((uint)value.height);
         packet.Serialize_u32((uint)bytes.Length);
@@ -280,15 +283,17 @@ public static class Protocols {
     }
 
     public static Texture2D Unserialize_texture(this List<byte> packet, ref int offset) {
+        TextureFormat format = (TextureFormat)packet.Unserialize_u8(ref offset);
         int width = (int)packet.Unserialize_u16(ref offset);
         int height = (int)packet.Unserialize_u16(ref offset);
         int length = (int)packet.Unserialize_u32(ref offset);
         byte[] bytes = new byte[length];
         packet.CopyTo(offset, bytes, 0, length);
         offset += length;
-        Texture2D texture = new Texture2D(width, height);
+        Texture2D texture = new Texture2D(width, height, format, false);
         texture.LoadRawTextureData(bytes);
         texture.Apply();
+
         return texture;
     }
 

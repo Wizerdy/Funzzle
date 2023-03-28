@@ -117,12 +117,12 @@ public class ClientCore : MonoBehaviour {
     }
 
     public static void Send(Protocols.IPacket packet) {
-        Debug.Log("(C) Packet Send : " + packet.Opcode.ToString() + " (unknown)");
 
         if (PlayerInformation.IsServer) { ShamClientCore.Send(packet); return; }
 
         if (!peer.IsSet) { return; }
         ENet.Packet epacket = Protocols.BuildPacket(packet);
+        Debug.Log("(C) Packet Send : " + packet.Opcode.ToString() + " (" + epacket.Length + ")");
         peer.Send(0, ref epacket);
     }
 }

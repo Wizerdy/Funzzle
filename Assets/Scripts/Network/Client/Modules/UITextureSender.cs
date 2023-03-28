@@ -51,6 +51,10 @@ namespace ClientModules {
         private void _OnButtonClick() {
             Texture2D texture = ImageExplorer();
             if (texture == null) { return; }
+            //List<byte> bytes = new List<byte>();
+            //int offset = 0;
+            //Protocols.Serialize_texture(bytes, texture);
+            //texture = bytes.Unserialize_texture(ref offset);
             //Sprite sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), Vector2.one * 0.5f);
             //SetImage(sprite);
 
