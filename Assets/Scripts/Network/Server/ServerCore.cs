@@ -136,6 +136,7 @@ public class ServerCore : MonoBehaviour {
 
     public static void Send(Peer peer, Protocols.IPacket packet) {
         ENet.Packet epacket = Protocols.BuildPacket(packet);
+        Debug.Log("Packet Send : " + packet.Opcode + " (" + epacket.Length + ")");
         Send(peer, epacket);
     }
 

@@ -68,6 +68,8 @@ public class ClientPlayersList : MonoBehaviour {
     private void AddPlayer(Player player) {
         _players.Add(player.id, player);
         _onNewPlayer.Invoke(player);
+
+        Debug.Log(">> Player #" + player.id + " : " + player.name);
     }
 
     private void RemovePlayer(uint id) {
@@ -76,5 +78,7 @@ public class ClientPlayersList : MonoBehaviour {
         Player player = _players[id];
         _players.Remove(id);
         _onPlayerLeft.Invoke(player);
+
+        Debug.Log("<< Player #" + player.id + " : " + player.name);
     }
 }

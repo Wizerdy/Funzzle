@@ -94,6 +94,7 @@ public class ClientCore : MonoBehaviour {
         int offset = 0;
         Protocols.Opcode opcode = (Protocols.Opcode)packet.Unserialize_u8(ref offset);
 
+        Debug.Log("Packet Received : " + opcode.ToString() + " (" + packet.Count + ")");
         _onReceive.Invoke(opcode, packet);
     }
 
