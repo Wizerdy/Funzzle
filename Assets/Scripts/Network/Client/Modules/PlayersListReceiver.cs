@@ -19,7 +19,7 @@ namespace ClientModules {
             ClientPlayersList.OnNewPlayer += _OnNewPlayer;
             ClientPlayersList.OnPlayerLeft += _OnPlayerLeft;
 
-            Dictionary<uint, Player> players = ClientPlayersList.Players;
+            Dictionary<uint, Player> players = ClientPlayersList.Instance.Players;
             foreach (var player in players) {
                 _OnNewPlayer(player.Value);
             }

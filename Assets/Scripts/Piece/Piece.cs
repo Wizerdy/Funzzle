@@ -20,6 +20,7 @@ public class Piece : MonoBehaviour, IDraggable {
     [SerializeField] BetterEvent _onRelease = new BetterEvent();
     [SerializeField] BetterEvent _onAssemble = new BetterEvent();
 
+    bool _init = false;
     Rigidbody _rb;
     Puzzle _puzzle;
     Vector2Int _puzzlePosition;
@@ -31,6 +32,7 @@ public class Piece : MonoBehaviour, IDraggable {
     Color[] _debugColors = { Color.blue, Color.red, Color.yellow, Color.green };
 
     public GameObject GameObject => gameObject;
+    public Rigidbody Rigidbody => _rb;
     public Puzzle Puzzle { get => _puzzle; set => _puzzle = value; }
     public Vector2Int PuzzlePosition { get => _puzzlePosition; set => _puzzlePosition = value; }
     public Texture Texture { get => _texture; set => _texture = value; }
@@ -43,6 +45,11 @@ public class Piece : MonoBehaviour, IDraggable {
     public event UnityAction OnAssemble { add => _onAssemble += value; remove => _onAssemble += value; }
 
     private void Start() {
+        Init();
+    }
+
+    public void Init() {
+        if (_init) { return; }
         _rb = GetComponent<Rigidbody>();
         OnAssemble += RemoveRigidbody;
         InstantiateCorners();
@@ -176,5 +183,14 @@ public class Piece : MonoBehaviour, IDraggable {
 
     public void AddNeighbours(Direction direction, Piece piece) {
         _neighbours.Add(direction, piece);
+    }
+
+    public void ApplyPhysicState(PhysicState state) {
+        if (_rb == null) { Debug.LogError("Rigidbody not set !"); return; }
+
+        _rb.velocity = state.velocity;
+        _rb.angularVelocity = state.angularVelocity;
+        _rb.rotation = state.rotation;
+        _rb.position = state.position;
     }
 }

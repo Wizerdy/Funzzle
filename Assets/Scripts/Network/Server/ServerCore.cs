@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.Events;
 
 public class ServerCore : MonoBehaviour {
+    [SerializeField] PlayerInformation _playerInformation;
     [SerializeField] int _maxPlayers = 4;
 
     static ServerCore _instance;
@@ -20,6 +21,7 @@ public class ServerCore : MonoBehaviour {
     static BetterEvent<ENet.Peer> _onDisconnect = new BetterEvent<ENet.Peer>();
     static BetterEvent<ENet.Peer, Protocols.Opcode, List<byte>> _onReceive = new BetterEvent<ENet.Peer, Protocols.Opcode, List<byte>>();
 
+    public static Peer ClientPeer => new Peer();
     public static bool ServerRunning => _server.IsSet;
     public static event UnityAction OnCreate { add => _onCreate += value; remove => _onCreate += value; }
     public static event UnityAction<ENet.Peer> OnConnect { add => _onConnect += value; remove => _onConnect += value; }
@@ -38,7 +40,7 @@ public class ServerCore : MonoBehaviour {
             return;
         }
 
-        PlayerInformation.IsServer = true;
+        _playerInformation.IsServer = true;
     }
 
     void Start() {
@@ -96,7 +98,6 @@ public class ServerCore : MonoBehaviour {
 
                     case ENet.EventType.Receive:
                         //Debug.Log("Packet received from - ID: " + peer.ID + ", IP: " + peer.IP + ", Channel ID: " + evt.ChannelID + ", Data length: " + evt.Packet.Length);
-
                         Receive(peer, evt.Packet);
 
                         evt.Packet.Dispose();
@@ -114,7 +115,7 @@ public class ServerCore : MonoBehaviour {
         int offset = 0;
         Protocols.Opcode opcode = (Protocols.Opcode)packet.Unserialize_u8(ref offset);
 
-        Debug.Log("(S) Packet Received : " + opcode.ToString() + " (" + packet.Count + ")");
+        Debug.Log("(S) Packet Received : " + opcode.ToString() + " (" + epacket.Length + ")");
 
         _onReceive.Invoke(peer, opcode, packet);
     }
@@ -132,13 +133,13 @@ public class ServerCore : MonoBehaviour {
     }
 
     public static void Send(Peer peer, ENet.Packet packet) {
-        if (!peer.IsSet) { ShamClientCore.Receive(packet); return; }
+        if (IsHost(peer)) { ShamClientCore.Receive(packet); return; }
         peer.Send(0, ref packet);
     }
 
     public static void Send(Peer peer, Protocols.IPacket packet) {
         ENet.Packet epacket = Protocols.BuildPacket(packet);
-        Debug.Log("(S) Packet Send : " + packet.Opcode + " (" + epacket.Length + ")");
+        Debug.Log("(S) Packet Send to " + (peer.IsSet ? peer.IP : "localhost") + " : " + packet.Opcode + " (" + epacket.Length + ")");
         Send(peer, epacket);
     }
 
@@ -157,5 +158,9 @@ public class ServerCore : MonoBehaviour {
 
     public static void SendAll(Protocols.IPacket packet) {
         SendAll(packet, new Peer[] {});
+    }
+
+    public static bool IsHost(Peer peer) {
+        return !peer.IsSet;
     }
 }

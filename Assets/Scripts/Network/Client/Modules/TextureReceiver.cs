@@ -7,6 +7,7 @@ using TMPro;
 
 namespace ClientModules {
     public class TextureReceiver : MonoBehaviour {
+        [SerializeField] PuzzleInformation _clientPuzzle;
         [SerializeField] Image _image;
         [SerializeField] TextMeshProUGUI _puzzleSize;
 
@@ -27,6 +28,8 @@ namespace ClientModules {
                             SetImage(Sprite.Create(packet.texture, 
                                 new Rect(0f, 0f, packet.texture.width, packet.texture.height), 
                                 Vector2.one * 0.5f));
+
+                            _clientPuzzle.Texture = packet.texture;
                         }
                     }
                     break;
@@ -36,6 +39,9 @@ namespace ClientModules {
                         if (_puzzleSize != null) {
                             _puzzleSize.text = "(" + packet.size.x + "x" + packet.size.y + ")";
                         }
+
+                        _clientPuzzle.Size = packet.size;
+                        _clientPuzzle.PieceScale = packet.piecesScale;
                     }
                     break;
             }

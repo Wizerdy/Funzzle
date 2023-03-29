@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class ServerMenu : MonoBehaviour {
     [Header("Fields")]
+    [SerializeField] PlayerInformation _playerInformation;
     [SerializeField] ushort _port = 14769;
     [SerializeField] string _name = "Billy";
     [SerializeField] int _nextScene = 0;
@@ -42,8 +43,8 @@ public class ServerMenu : MonoBehaviour {
     }
 
     public void CreateServer() {
-        PlayerInformation.Id = 0;
-        PlayerInformation.Name = _name;
+        _playerInformation.Id = 0;
+        _playerInformation.Name = _name;
 
         ServerCore.CreateServer(_port);
 

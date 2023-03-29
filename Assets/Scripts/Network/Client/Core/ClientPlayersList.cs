@@ -11,15 +11,27 @@ public struct Player {
 }
 
 public class ClientPlayersList : MonoBehaviour {
-    static Dictionary<uint, Player> _players = new Dictionary<uint, Player>();
+    static ClientPlayersList _instance;
+
+    Dictionary<uint, Player> _players = new Dictionary<uint, Player>();
 
     static BetterEvent<Player> _onNewPlayer = new BetterEvent<Player>();
     static BetterEvent<Player> _onPlayerLeft = new BetterEvent<Player>();
 
-    public static Dictionary<uint, Player> Players => new Dictionary<uint, Player>(_players);
+    public static ClientPlayersList Instance => _instance;
+    public Dictionary<uint, Player> Players => new Dictionary<uint, Player>(_players);
 
     public static event UnityAction<Player> OnNewPlayer { add => _onNewPlayer += value; remove => _onNewPlayer -= value; }
     public static event UnityAction<Player> OnPlayerLeft { add => _onPlayerLeft += value; remove => _onPlayerLeft -= value; }
+
+    private void Awake() {
+        if (_instance != null) {
+            Destroy(gameObject);
+        } else {
+            DontDestroyOnLoad(gameObject);
+            _instance = this;
+        }
+    }
 
     private void Start() {
         ClientCore.OnReceive += _OnReceive;

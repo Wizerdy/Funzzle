@@ -5,6 +5,7 @@ using TMPro;
 
 namespace ClientModules {
     public class DisplayPlayerName : MonoBehaviour {
+        [SerializeField] PlayerInformation _playerInformation;
         [SerializeField] TextMeshProUGUI _text;
 
         private void Reset() {
@@ -12,7 +13,7 @@ namespace ClientModules {
         }
 
         void Start() {
-            _text.text = PlayerInformation.Name;
+            _text.text = _playerInformation.Name;
         }
     }
 }

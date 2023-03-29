@@ -7,6 +7,8 @@ using UnityEngine.Events;
 using UnityEditor;
 
 public class ClientCore : MonoBehaviour {
+    [SerializeField] PlayerInformation _playerInformation;
+
     static ClientCore _instance;
 
     static BetterEvent<ENet.Peer> _onConnect = new BetterEvent<ENet.Peer>();
@@ -94,7 +96,7 @@ public class ClientCore : MonoBehaviour {
         int offset = 0;
         Protocols.Opcode opcode = (Protocols.Opcode)packet.Unserialize_u8(ref offset);
 
-        Debug.Log("(C) Packet Received : " + opcode.ToString() + " (" + packet.Count + ")");
+        Debug.Log("(C) Packet Received : " + opcode.ToString() + " (" + epacket.Length + ")");
         _onReceive.Invoke(opcode, packet);
     }
 
@@ -117,8 +119,7 @@ public class ClientCore : MonoBehaviour {
     }
 
     public static void Send(Protocols.IPacket packet) {
-
-        if (PlayerInformation.IsServer) { ShamClientCore.Send(packet); return; }
+        if (_instance._playerInformation.IsServer) { ShamClientCore.Send(packet); return; }
 
         if (!peer.IsSet) { return; }
         ENet.Packet epacket = Protocols.BuildPacket(packet);

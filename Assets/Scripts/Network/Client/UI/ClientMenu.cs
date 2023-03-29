@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public class ClientMenu : MonoBehaviour {
     [Header("Fields")]
+    [SerializeField] PlayerInformation _playerInformation;
     [SerializeField] ushort _port = 14769;
     [SerializeField] string _ip = "localhost";
     [SerializeField] string _name = "Billy";
@@ -80,10 +81,10 @@ public class ClientMenu : MonoBehaviour {
         if (opcode != Protocols.Opcode.S_ID) { return; }
 
         S_IdPacket packet = S_IdPacket.Unserialize(bytes);
-        PlayerInformation.Id = packet.id;
-        PlayerInformation.Name = _name;
+        _playerInformation.Id = packet.id;
+        _playerInformation.Name = _name;
 
-        Debug.Log("#" + PlayerInformation.Id + ":" + PlayerInformation.Name);
+        Debug.Log("#" + _playerInformation.Id + ":" + _playerInformation.Name);
 
         SceneLoader.LoadScene(_nextScene);
     }

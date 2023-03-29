@@ -13,12 +13,26 @@ public struct Client {
 }
 
 public class ServerPlayersList : MonoBehaviour {
+    static ServerPlayersList _instance;
+
+    [SerializeField] PlayerInformation _playerInformation;
+
+    SortedDictionary<uint, Client> _clients = new SortedDictionary<uint, Client>();
+
     static BetterEvent<Client> _onNewClient = new BetterEvent<Client>();
 
-    static SortedDictionary<uint, Client> _clients = new SortedDictionary<uint, Client>();
-
+    public static ServerPlayersList Instance => _instance;
     public static Dictionary<uint, Client> Clients => GetClients();
     public static event UnityAction<Client> OnNewClient { add => _onNewClient += value; remove => _onNewClient -= value; }
+
+    private void Awake() {
+        if (_instance != null) {
+            Destroy(gameObject);
+        } else {
+            _instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+    }
 
     private void Start() {
         ServerCore.OnReceive += _OnReceive;
@@ -85,7 +99,7 @@ public class ServerPlayersList : MonoBehaviour {
 
     public static Client ClientServer() {
         Client client = new Client();
-        client.name = PlayerInformation.Name;
+        client.name = _instance._playerInformation.Name;
         client.id = 0;
         return client;
     }
@@ -106,7 +120,7 @@ public class ServerPlayersList : MonoBehaviour {
     }
 
     private static Dictionary<uint, Client> GetClients() {
-        Dictionary<uint, Client> clients = new Dictionary<uint, Client>(_clients) {
+        Dictionary<uint, Client> clients = new Dictionary<uint, Client>(_instance._clients) {
             { 0, ClientServer() }
         };
         return clients;

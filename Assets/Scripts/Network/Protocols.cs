@@ -17,6 +17,7 @@ public static class Protocols {
         C_INPUTS,               // [INPUTS:input]
         C_PUZZLE_IMAGE,         // [TEXTURE:texture]
         C_PUZZLE,               // [SIZE:v2][SCALE:v2]
+        C_START_GAME,           // 
 
         S_ID,                   // [ID:u8]
         S_NEW_PLAYER,           // [ID:u8][NAME:string]
@@ -24,7 +25,9 @@ public static class Protocols {
         S_PLAYERS_LIST,         // [COUNT:u8]{PLAYERS:[ID:u8][NAME:string]}
         S_PUZZLE_IMAGE,         // [TEXTURE:texture]
         S_PUZZLE,               // [SIZE:v2][SCALE:v2]
-        S_PIECES                // [COUNT:u16]{PIECES:[PHYSIC:PhysicState]}
+        S_WHOLE_PUZZLE,         // [COUNT:u16]{PIECES:[ID:u32][GATES:bool][POSITION:v2i]}
+        S_PIECES,               // [COUNT:u16]{PIECES:[PHYSIC:PhysicState]}
+        S_START_GAME            // 
     }
 
     public interface IPacket {
@@ -317,14 +320,12 @@ public static class Protocols {
 }
 
 public struct PhysicState {
-    public uint id;
     public Vector3 position;
     public Quaternion rotation;
     public Vector3 velocity;
     public Vector3 angularVelocity;
 
     public void Serialize(List<byte> array) {
-        array.Serialize_u16(id);
         array.Serialize_v3(position);
         array.Serialize_v4(new Vector4(rotation.x, rotation.y, rotation.z, rotation.w));
         array.Serialize_v3(velocity);
@@ -334,7 +335,6 @@ public struct PhysicState {
     public static PhysicState Unserialize(List<byte> array, ref int offset) {
         PhysicState physicState = new PhysicState();
 
-        physicState.id = array.Unserialize_u16(ref offset);
         physicState.position = array.Unserialize_v3(ref offset);
         Vector4 rotation = array.Unserialize_v4(ref offset);
         physicState.rotation = new Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);

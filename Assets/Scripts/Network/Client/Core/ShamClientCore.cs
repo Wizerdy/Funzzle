@@ -15,6 +15,7 @@ public static class ShamClientCore {
 
     public static void Send(Protocols.IPacket packet) {
         ENet.Packet epacket = Protocols.BuildPacket(packet);
+        Debug.Log("(SC) Packet Send : " + packet.Opcode.ToString() + " (" + epacket.Length + ")");
         _sendQueue.Enqueue(epacket);
     }
 

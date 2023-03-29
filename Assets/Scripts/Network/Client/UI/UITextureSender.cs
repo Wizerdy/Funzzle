@@ -23,8 +23,8 @@ namespace ClientModules {
 
         private void Start() {
             _imageButton?.onClick.AddListener(_OnButtonClick);
-            _widthInput?.onSubmit.AddListener(_OnWidthChange);
-            _heightInput?.onSubmit.AddListener(_OnHeightChange);
+            _widthInput?.onValueChanged.AddListener(_OnWidthChange);
+            _heightInput?.onValueChanged.AddListener(_OnHeightChange);
             _referenceSize = _imageButton.image.rectTransform.sizeDelta;
         }
 
@@ -80,8 +80,9 @@ namespace ClientModules {
         private Texture2D ImageExplorer() {
             string path = UnityEditor.EditorUtility.OpenFilePanel("Select Image", "", "png");
 
-            Texture2D texture = new Texture2D(1, 1);
+            Texture2D texture = null;
             if (path.Length != 0) {
+                texture = new Texture2D(1, 1);
                 texture.LoadImage(File.ReadAllBytes(path));
             }
             return texture;

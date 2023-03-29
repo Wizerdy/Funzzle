@@ -519,6 +519,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f1a4b22ad0d62f4bbf65f10ce3e7cf5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playerInformation: {fileID: 11400000, guid: 802330cf34d0990488e355bcd5143427, type: 2}
   _port: 14769
   _ip: localhost
   _name: Wiredii
@@ -2382,6 +2383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34438c65cde4d1846a593e5311eb7188, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playerInformation: {fileID: 11400000, guid: 802330cf34d0990488e355bcd5143427, type: 2}
 --- !u!4 &2058984418
 Transform:
   m_ObjectHideFlags: 0
