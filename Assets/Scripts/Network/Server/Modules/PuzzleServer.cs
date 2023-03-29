@@ -16,7 +16,7 @@ namespace ServerModules {
         }
 
         private void Update() {
-            _netTimer -= Time.deltaTime;
+            _timer -= Time.deltaTime;
 
             while (_timer <= 0f) {
                 //SendPiecePhysic(_puzzle);
