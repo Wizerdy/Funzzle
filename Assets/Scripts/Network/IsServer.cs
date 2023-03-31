@@ -9,6 +9,7 @@ public class IsServer : MonoBehaviour {
     private void Awake() {
         if (!_beServer && _playerInformation.IsServer) {
             Destroy(gameObject);
+            gameObject.SetActive(false);
         }
     }
 }

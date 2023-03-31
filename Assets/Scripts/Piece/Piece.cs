@@ -4,7 +4,6 @@ using UnityEngine;
 using ToolsBoxEngine.BetterEvents;
 using UnityEngine.Events;
 using ToolsBoxEngine;
-using UnityEditor.SceneManagement;
 
 [SelectionBase]
 public class Piece : MonoBehaviour, IDraggable {
@@ -32,7 +31,7 @@ public class Piece : MonoBehaviour, IDraggable {
     Color[] _debugColors = { Color.blue, Color.red, Color.yellow, Color.green };
 
     public GameObject GameObject => gameObject;
-    public Rigidbody Rigidbody => _rb;
+    public Rigidbody Rigidbody => DraggableParent ? DraggableParent.GetComponent<Rigidbody>() : _rb;
     public Puzzle Puzzle { get => _puzzle; set => _puzzle = value; }
     public Vector2Int PuzzlePosition { get => _puzzlePosition; set => _puzzlePosition = value; }
     public Texture Texture { get => _texture; set => _texture = value; }
@@ -57,12 +56,16 @@ public class Piece : MonoBehaviour, IDraggable {
 
     private void InstantiateCorners() {
         for (int i = 0; i < 4; i++) {
-            GameObject obj = Instantiate(GetCorner(_gates[i]), transform);
-            obj.transform.localPosition = Vector3.zero;
-            obj.transform.localRotation = Quaternion.LookRotation(-Vector3.forward, Tools.DirToV2((Direction)i));
-            //obj.transform.localScale = _puzzle.PieceSize.ToV3(1f);
-            obj.GetComponent<CornerPieceUVs>().SetUV(_texture, _puzzlePosition, _puzzle.PuzzleSize, (Direction)i);
-            obj.name = ((Direction)i).ToString();
+            try {
+                GameObject obj = Instantiate(GetCorner(_gates[i]), transform);
+                obj.transform.localPosition = Vector3.zero;
+                obj.transform.localRotation = Quaternion.LookRotation(-Vector3.forward, Tools.DirToV2((Direction)i));
+                //obj.transform.localScale = _puzzle.PieceSize.ToV3(1f);
+                obj.GetComponent<CornerPieceUVs>().SetUV(_texture, _puzzlePosition, _puzzle.PuzzleSize, (Direction)i);
+                obj.name = ((Direction)i).ToString();
+            } catch (System.Exception e) {
+                Debug.LogError(e);
+            }
         }
     }
 
@@ -186,11 +189,11 @@ public class Piece : MonoBehaviour, IDraggable {
     }
 
     public void ApplyPhysicState(PhysicState state) {
-        if (_rb == null) { Debug.LogError("Rigidbody not set !"); return; }
+        if (Rigidbody == null) { Debug.LogError("Rigidbody not set !"); return; }
 
-        _rb.velocity = state.velocity;
-        _rb.angularVelocity = state.angularVelocity;
-        _rb.rotation = state.rotation;
-        _rb.position = state.position;
+        Rigidbody.velocity = state.velocity;
+        Rigidbody.angularVelocity = state.angularVelocity;
+        Rigidbody.rotation = state.rotation;
+        Rigidbody.position = state.position;
     }
 }

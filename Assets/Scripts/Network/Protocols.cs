@@ -215,15 +215,15 @@ public static class Protocols {
     }
 
     public static int Unserialize_i8(this List<byte> packet, ref int offset) {
-        return (int)Unserialize_u8(packet, ref offset);
+        return (sbyte)Unserialize_u8(packet, ref offset);
     }
 
     public static int Unserialize_i16(this List<byte> packet, ref int offset) {
-        return (int)Unserialize_u16(packet, ref offset);
+        return Convert.ToInt16(Unserialize_u16(packet, ref offset));
     }
 
     public static int Unserialize_i32(this List<byte> packet, ref int offset) {
-        return (int)Unserialize_u32(packet, ref offset);
+        return Convert.ToInt32(Unserialize_u32(packet, ref offset));
     }
 
     public static float Unserialize_f32(this List<byte> packet, ref int offset) {

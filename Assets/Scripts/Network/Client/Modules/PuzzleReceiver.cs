@@ -20,7 +20,7 @@ namespace ClientModules {
                         S_WholePuzzlePacket packet = S_WholePuzzlePacket.Unserialize(bytes);
 
                         for (int i = 0; i < packet.pieces.Count; i++) {
-                            _puzzle.CreatePiece(packet.pieces[i].position, packet.pieces[i].gates, Vector3.zero);
+                            _puzzle.CreatePiece(packet.pieces[i].position, packet.pieces[i].gates, Vector3.zero).Init();
                         }
                     }
                     break;

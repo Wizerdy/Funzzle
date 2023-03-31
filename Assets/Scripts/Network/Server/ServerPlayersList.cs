@@ -91,10 +91,10 @@ public class ServerPlayersList : MonoBehaviour {
         return nextId;
     }
 
-    public Client GetClient(uint id) {
+    public static Client GetClient(uint id) {
         if (id == 0) { return ClientServer(); }
-        if (!_clients.ContainsKey(id)) { throw new System.ArgumentOutOfRangeException("No such client " + id); }
-        return _clients[id];
+        if (!_instance._clients.ContainsKey(id)) { throw new System.ArgumentOutOfRangeException("No such client " + id); }
+        return _instance._clients[id];
     }
 
     public static Client ClientServer() {
@@ -104,8 +104,8 @@ public class ServerPlayersList : MonoBehaviour {
         return client;
     }
 
-    public Client? FindClient(Peer peer) {
-        foreach (KeyValuePair<uint, Client> client in _clients) {
+    public static Client? FindClient(Peer peer) {
+        foreach (KeyValuePair<uint, Client> client in _instance._clients) {
             if (client.Value.peer.ID == peer.ID) {
                 return client.Value;
             }
@@ -113,10 +113,10 @@ public class ServerPlayersList : MonoBehaviour {
         return null;
     }
 
-    private void DeleteClient(Peer peer) {
+    private static void DeleteClient(Peer peer) {
         Client? client = FindClient(peer);
         if (client == null) { return; }
-        _clients.Remove(client.Value.id);
+        _instance._clients.Remove(client.Value.id);
     }
 
     private static Dictionary<uint, Client> GetClients() {

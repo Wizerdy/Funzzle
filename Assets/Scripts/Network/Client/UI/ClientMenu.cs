@@ -15,10 +15,12 @@ public class ClientMenu : MonoBehaviour {
     [SerializeField] TMP_InputField ipInputField;
     [SerializeField] TMP_InputField portInputField;
     [SerializeField] TMP_InputField nameInputField;
+    [SerializeField] TextMeshProUGUI outputField;
 
     private void Start() {
         ClientCore.OnConnect += _OnConnect;
         ClientCore.OnReceive += _OnReceive;
+        ClientCore.OnTimeout += _OnTimeout;
 
         try {
             if (ipInputField != null) {
@@ -41,6 +43,7 @@ public class ClientMenu : MonoBehaviour {
     private void OnDestroy() {
         ClientCore.OnConnect -= _OnConnect;
         ClientCore.OnReceive -= _OnReceive;
+        ClientCore.OnTimeout -= _OnTimeout;
     }
 
     public void EnterIp(string text) {
@@ -65,16 +68,24 @@ public class ClientMenu : MonoBehaviour {
     }
 
     public void Connect() {
-        ClientCore.Connect(_ip, _port);
+        if (ClientCore.Connect(_ip, _port)) {
+            outputField.text = "Attempting to connect to " + _ip + ":" + _port;
+        }
+    }
+
+    private void _OnTimeout(ENet.Peer peer) {
+        outputField.text = "Failed to connect";
     }
 
     private void _OnConnect(ENet.Peer peer) {
         C_JoinGamePacket packet;
         packet.name = _name;
 
+        Debug.Log("Connected ! ");
+
         ClientCore.Send(packet);
 
-        Debug.Log("Connected ! ");
+        outputField.text = "Connected !";
     }
 
     private void _OnReceive(Protocols.Opcode opcode, List<byte> bytes) {

@@ -20,6 +20,7 @@ public class ServerCore : MonoBehaviour {
     static BetterEvent<ENet.Peer> _onConnect = new BetterEvent<ENet.Peer>();
     static BetterEvent<ENet.Peer> _onDisconnect = new BetterEvent<ENet.Peer>();
     static BetterEvent<ENet.Peer, Protocols.Opcode, List<byte>> _onReceive = new BetterEvent<ENet.Peer, Protocols.Opcode, List<byte>>();
+    static BetterEvent<ENet.Peer, Protocols.Opcode> _onSend = new BetterEvent<ENet.Peer, Protocols.Opcode>();
 
     public static Peer ClientPeer => new Peer();
     public static bool ServerRunning => _server.IsSet;
@@ -27,6 +28,7 @@ public class ServerCore : MonoBehaviour {
     public static event UnityAction<ENet.Peer> OnConnect { add => _onConnect += value; remove => _onConnect += value; }
     public static event UnityAction<ENet.Peer> OnDisconnect { add => _onDisconnect += value; remove => _onDisconnect += value; }
     public static event UnityAction<ENet.Peer, Protocols.Opcode, List<byte>> OnReceive { add => _onReceive += value; remove => _onReceive += value; }
+    public static event UnityAction<ENet.Peer, Protocols.Opcode> OnSend { add => _onSend += value; remove => _onSend += value; }
 
     #region Unity Callbacks
 
@@ -39,8 +41,6 @@ public class ServerCore : MonoBehaviour {
             Destroy(gameObject);
             return;
         }
-
-        _playerInformation.IsServer = true;
     }
 
     void Start() {
@@ -140,6 +140,7 @@ public class ServerCore : MonoBehaviour {
     public static void Send(Peer peer, Protocols.IPacket packet) {
         ENet.Packet epacket = Protocols.BuildPacket(packet);
         Debug.Log("(S) Packet Send to " + (peer.IsSet ? peer.IP : "localhost") + " : " + packet.Opcode + " (" + epacket.Length + ")");
+        _onSend.Invoke(peer, packet.Opcode);
         Send(peer, epacket);
     }
 
@@ -147,12 +148,12 @@ public class ServerCore : MonoBehaviour {
         ENet.Packet epacket = Protocols.BuildPacket(packet);
         for (int i = 0; i < _peers.Count; i++) {
             if (peerToIgnore.Contains(_peers[i])) { continue; }
-            Send(_peers[i], epacket);
+            Send(_peers[i], packet);
         }
 
         // Sham Client
         if (!peerToIgnore.Contains(new Peer())) {
-            Send(new Peer(), epacket);
+            Send(new Peer(), packet);
         }
     }
 

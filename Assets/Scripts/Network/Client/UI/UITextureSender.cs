@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.IO;
 using System;
+using SFB;
 
 namespace ClientModules {
     public class UITextureSender : MonoBehaviour {
@@ -78,12 +79,13 @@ namespace ClientModules {
         }
 
         private Texture2D ImageExplorer() {
-            string path = UnityEditor.EditorUtility.OpenFilePanel("Select Image", "", "png");
+            string[] path = StandaloneFileBrowser.OpenFilePanel("Select Image", "", "png", false);
+            //string path = UnityEditor.EditorUtility.OpenFilePanel("Select Image", "", "png");
 
             Texture2D texture = null;
-            if (path.Length != 0) {
+            if (path.Length != 0 && path[0].Length != 0) {
                 texture = new Texture2D(1, 1);
-                texture.LoadImage(File.ReadAllBytes(path));
+                texture.LoadImage(File.ReadAllBytes(path[0]));
             }
             return texture;
         }
