@@ -7,7 +7,7 @@ public class IsServer : MonoBehaviour {
     [SerializeField] bool _beServer = true;
 
     private void Awake() {
-        if (!_beServer && _playerInformation.IsServer) {
+        if (_beServer != _playerInformation.IsServer) {
             Destroy(gameObject);
             gameObject.SetActive(false);
         }

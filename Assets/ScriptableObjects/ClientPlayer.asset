@@ -12,3 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3dd201d527c935a4384e1966ecccaa9d, type: 3}
   m_Name: ClientPlayer
   m_EditorClassIdentifier: 
+  _id: 4444
+  _name: Not Set
+  _isServer: 0

@@ -9,7 +9,9 @@ using UnityEngine.Rendering;
         C_INPUTS,               // [INPUTS:input]
         C_PUZZLE_IMAGE,         // [TEXTURE:texture]
         C_PUZZLE,               // [SIZE:v2][SCALE:v2]
-        C_START_GAME            // 
+        C_READY,                // 
+        C_START_GAME,           // 
+        C_ASSEMBLE,             // [PIECE1:v2i][PIECE2:v2i]
 
         S_ID,                   // [ID:u8]
         S_NEW_PLAYER,           // [ID:u8][NAME:string]
@@ -19,8 +21,12 @@ using UnityEngine.Rendering;
         S_PUZZLE,               // [SIZE:v2][SCALE:v2]
         S_WHOLE_PUZZLE,         // [COUNT:u16]{PIECES:[ID:u32][GATES:bool][POSITION:v2i]}
         S_PIECES,               // [COUNT:u16]{PIECES:[PHYSIC:PhysicState]}
-        S_START_GAME            // 
+        S_IS_READY,             // 
+        S_START_GAME,           // 
+        S_ASSEMBLE,             // [PIECE1:v2i][PIECE2:v2i]
 */
+
+#region Client
 
 public struct C_JoinGamePacket : Protocols.IPacket {
     static Protocols.Opcode _opcode => Protocols.Opcode.C_JOIN_GAME;
@@ -97,6 +103,26 @@ public struct C_PuzzlePacket : Protocols.IPacket {
     }
 }
 
+public struct C_ReadyPacket : Protocols.IPacket {
+    static Protocols.Opcode _opcode => Protocols.Opcode.C_READY;
+    public Protocols.Opcode Opcode => _opcode;
+
+    public List<byte> Serialize() {
+        List<byte> packet = new List<byte>();
+
+        return packet;
+    }
+
+    public static C_ReadyPacket Unserialize(List<byte> bytes) {
+        int offset = 0;
+        Protocols.TestOpcode(bytes, _opcode, ref offset);
+
+        C_ReadyPacket packet = new C_ReadyPacket();
+
+        return packet;
+    }
+}
+
 public struct C_StartGamePacket : Protocols.IPacket {
     static Protocols.Opcode _opcode => Protocols.Opcode.C_START_GAME;
     public Protocols.Opcode Opcode => _opcode;
@@ -117,7 +143,38 @@ public struct C_StartGamePacket : Protocols.IPacket {
     }
 }
 
-// Server
+public struct C_AssemblePacket : Protocols.IPacket {
+    static Protocols.Opcode _opcode => Protocols.Opcode.C_ASSEMBLE;
+    public Protocols.Opcode Opcode => _opcode;
+
+    public Vector2Int piece1;
+    public Vector2Int piece2;
+
+    public List<byte> Serialize() {
+        List<byte> packet = new List<byte>();
+
+        packet.Serialize_v2i(piece1);
+        packet.Serialize_v2i(piece2);
+
+        return packet;
+    }
+
+    public static C_AssemblePacket Unserialize(List<byte> bytes) {
+        int offset = 0;
+        Protocols.TestOpcode(bytes, _opcode, ref offset);
+
+        C_AssemblePacket packet = new C_AssemblePacket() {
+            piece1 = bytes.Unserialize_v2i(ref offset),
+            piece2 = bytes.Unserialize_v2i(ref offset)
+        };
+
+        return packet;
+    }
+}
+
+#endregion
+
+#region Server
 
 public struct S_IdPacket : Protocols.IPacket {
     static Protocols.Opcode _opcode => Protocols.Opcode.S_ID;
@@ -369,6 +426,26 @@ public struct S_PiecesPacket : Protocols.IPacket {
     }
 }
 
+public struct S_IsReadyPacket : Protocols.IPacket {
+    static Protocols.Opcode _opcode => Protocols.Opcode.S_IS_READY;
+    public Protocols.Opcode Opcode => _opcode;
+
+    public List<byte> Serialize() {
+        List<byte> packet = new List<byte>();
+
+        return packet;
+    }
+
+    public static S_IsReadyPacket Unserialize(List<byte> bytes) {
+        int offset = 0;
+        Protocols.TestOpcode(bytes, _opcode, ref offset);
+
+        S_IsReadyPacket packet = new S_IsReadyPacket();
+
+        return packet;
+    }
+}
+
 public struct S_StartGamePacket : Protocols.IPacket {
     static Protocols.Opcode _opcode => Protocols.Opcode.S_START_GAME;
     public Protocols.Opcode Opcode => _opcode;
@@ -388,3 +465,34 @@ public struct S_StartGamePacket : Protocols.IPacket {
         return packet;
     }
 }
+
+public struct S_AssemblePacket : Protocols.IPacket {
+    static Protocols.Opcode _opcode => Protocols.Opcode.S_ASSEMBLE;
+    public Protocols.Opcode Opcode => _opcode;
+
+    public Vector2Int piece1;
+    public Vector2Int piece2;
+
+    public List<byte> Serialize() {
+        List<byte> packet = new List<byte>();
+
+        packet.Serialize_v2i(piece1);
+        packet.Serialize_v2i(piece2);
+
+        return packet;
+    }
+
+    public static S_AssemblePacket Unserialize(List<byte> bytes) {
+        int offset = 0;
+        Protocols.TestOpcode(bytes, _opcode, ref offset);
+
+        S_AssemblePacket packet = new S_AssemblePacket() {
+            piece1 = bytes.Unserialize_v2i(ref offset),
+            piece2 = bytes.Unserialize_v2i(ref offset)
+        };
+
+        return packet;
+    }
+}
+
+#endregion

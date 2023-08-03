@@ -13,8 +13,8 @@ public class ServerCore : MonoBehaviour {
 
     static ServerCore _instance;
 
-    static ENet.Host _server = new ENet.Host();
-    static List<Peer> _peers = new List<Peer>();
+    ENet.Host _server = new ENet.Host();
+    List<Peer> _peers = new List<Peer>();
 
     static BetterEvent _onCreate = new BetterEvent();
     static BetterEvent<ENet.Peer> _onConnect = new BetterEvent<ENet.Peer>();
@@ -22,8 +22,9 @@ public class ServerCore : MonoBehaviour {
     static BetterEvent<ENet.Peer, Protocols.Opcode, List<byte>> _onReceive = new BetterEvent<ENet.Peer, Protocols.Opcode, List<byte>>();
     static BetterEvent<ENet.Peer, Protocols.Opcode> _onSend = new BetterEvent<ENet.Peer, Protocols.Opcode>();
 
+    public static bool ServerRunning => _instance._server.IsSet;
     public static Peer ClientPeer => new Peer();
-    public static bool ServerRunning => _server.IsSet;
+
     public static event UnityAction OnCreate { add => _onCreate += value; remove => _onCreate += value; }
     public static event UnityAction<ENet.Peer> OnConnect { add => _onConnect += value; remove => _onConnect += value; }
     public static event UnityAction<ENet.Peer> OnDisconnect { add => _onDisconnect += value; remove => _onDisconnect += value; }
@@ -126,7 +127,7 @@ public class ServerCore : MonoBehaviour {
         Address address = new Address();
 
         address.Port = port;
-        _server.Create(address, _instance._maxPlayers);
+        _instance._server.Create(address, _instance._maxPlayers);
         Debug.Log("Server created at " + address.GetHost() + " : " + address.Port);
         _onCreate.Invoke();
         return true;
@@ -145,10 +146,10 @@ public class ServerCore : MonoBehaviour {
     }
 
     public static void SendAll(Protocols.IPacket packet, params Peer[] peerToIgnore) {
-        ENet.Packet epacket = Protocols.BuildPacket(packet);
-        for (int i = 0; i < _peers.Count; i++) {
-            if (peerToIgnore.Contains(_peers[i])) { continue; }
-            Send(_peers[i], packet);
+        //ENet.Packet epacket = Protocols.BuildPacket(packet);
+        for (int i = 0; i < _instance._peers.Count; i++) {
+            if (peerToIgnore.Contains(_instance._peers[i])) { continue; }
+            Send(_instance._peers[i], packet);
         }
 
         // Sham Client

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using ToolsBoxEngine.BetterEvents;
-using System.Collections.ObjectModel;
 
 public struct Client {
     public uint id;
@@ -21,6 +20,7 @@ public class ServerPlayersList : MonoBehaviour {
 
     static BetterEvent<Client> _onNewClient = new BetterEvent<Client>();
 
+    public static int Count => _instance._clients.Count + 1;
     public static ServerPlayersList Instance => _instance;
     public static Dictionary<uint, Client> Clients => GetClients();
     public static event UnityAction<Client> OnNewClient { add => _onNewClient += value; remove => _onNewClient -= value; }

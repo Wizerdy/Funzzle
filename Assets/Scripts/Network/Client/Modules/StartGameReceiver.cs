@@ -16,9 +16,16 @@ namespace ClientModules {
         }
 
         private void _OnReceive(Protocols.Opcode opcode, List<byte> bytes) {
-            if (opcode != Protocols.Opcode.S_START_GAME) { return; }
+            switch (opcode) {
+                case Protocols.Opcode.S_IS_READY:
+                    C_ReadyPacket packet = new C_ReadyPacket();
 
-            SceneLoader.LoadScene(_nextScene);
+                    ClientCore.Send(packet);
+                    break;
+                case Protocols.Opcode.S_START_GAME:
+                    SceneLoader.LoadScene(_nextScene);
+                    break;
+            }
         }
     }
 }

@@ -17,7 +17,9 @@ public static class Protocols {
         C_INPUTS,               // [INPUTS:input]
         C_PUZZLE_IMAGE,         // [TEXTURE:texture]
         C_PUZZLE,               // [SIZE:v2][SCALE:v2]
+        C_READY,                // 
         C_START_GAME,           // 
+        C_ASSEMBLE,             // [PIECE1:v2i][PIECE2:v2i]
 
         S_ID,                   // [ID:u8]
         S_NEW_PLAYER,           // [ID:u8][NAME:string]
@@ -27,7 +29,9 @@ public static class Protocols {
         S_PUZZLE,               // [SIZE:v2][SCALE:v2]
         S_WHOLE_PUZZLE,         // [COUNT:u16]{PIECES:[ID:u32][GATES:bool][POSITION:v2i]}
         S_PIECES,               // [COUNT:u16]{PIECES:[PHYSIC:PhysicState]}
-        S_START_GAME            // 
+        S_IS_READY,             // 
+        S_START_GAME,           // 
+        S_ASSEMBLE,             // [PIECE1:v2i][PIECE2:v2i]
     }
 
     public interface IPacket {
